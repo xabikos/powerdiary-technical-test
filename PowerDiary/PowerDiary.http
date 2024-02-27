@@ -1,0 +1,6 @@
+@PowerDiary_HostAddress = http://localhost:5268
+
+GET {{PowerDiary_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
