@@ -10,6 +10,6 @@ namespace PowerDiary.Persistence
         /// <summary>
         /// Exposes the chat events in the data store in a queryable form
         /// </summary>
-        public IQueryable<ChatEvent> ChatEvents { get; }
+        public Task<IQueryable<ChatEvent>> RetrieveChatEventsAsync();
     }
 }

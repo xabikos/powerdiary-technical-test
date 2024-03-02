@@ -29,7 +29,7 @@ namespace PowerDiary.Tests
         {
             // Arrange
             var dataStore = Substitute.For<IDataStore>();
-            dataStore.ChatEvents.Returns(Enumerable.Empty<ChatEvent>().AsQueryable());
+            dataStore.RetrieveChatEventsAsync().Returns(Enumerable.Empty<ChatEvent>().AsQueryable());
             var sut = new ChatEventsService(dataStore);
 
             // Act
@@ -66,18 +66,54 @@ namespace PowerDiary.Tests
 
                 .Build();
             var sut = new ChatEventsService(dataStore);
-            dataStore.ChatEvents.Returns(expectedEvents);
+            dataStore.RetrieveChatEventsAsync().Returns(expectedEvents);
 
             // Act
             var events = await sut.RetrieveChatEvents(EventsGranularity.Minute);
 
             // Assert
             Assert.Equal(5, events.Count());
+            Assert.Equal(20, events.ElementAt(0).DateOccurred.Minute);
             Assert.Equal(2, events.ElementAt(0).Events.Count());
+            Assert.Equal(30, events.ElementAt(1).DateOccurred.Minute);
             Assert.Single(events.ElementAt(1).Events);
+            Assert.Equal(35, events.ElementAt(2).DateOccurred.Minute);
             Assert.Single(events.ElementAt(2).Events);
+            Assert.Equal(40, events.ElementAt(3).DateOccurred.Minute);
             Assert.Equal(2, events.ElementAt(3).Events.Count());
+            Assert.Equal(45, events.ElementAt(4).DateOccurred.Minute);
             Assert.Single(events.ElementAt(4).Events);
+        }
+
+        [Fact]
+        public async Task RetrieveChatEvents_SameMinuteDifferentHour_ReturnsResult()
+        {
+            // Arrange
+            var dataStore = Substitute.For<IDataStore>();
+            var testDataBuilder = new TestDataBuilder();
+            var time = DateTime.Parse("2024-02-18T07:20:12");
+            var expectedEvents = testDataBuilder
+                .WithTime(time)
+                .AddUserEntered("Bob")
+
+                .WithTime(time.AddHours(1))
+                .AddUserLeft("Bob")
+
+                .Build();
+            var sut = new ChatEventsService(dataStore);
+            dataStore.RetrieveChatEventsAsync().Returns(expectedEvents);
+
+            // Act
+            var events = await sut.RetrieveChatEvents(EventsGranularity.Minute);
+
+            // Assert
+            Assert.Equal(2, events.Count());
+            Assert.Equal(20, events.ElementAt(0).DateOccurred.Minute);
+            Assert.Equal(7, events.ElementAt(0).DateOccurred.Hour);
+            Assert.Single(events.ElementAt(0).Events);
+            Assert.Equal(20, events.ElementAt(1).DateOccurred.Minute);
+            Assert.Equal(8, events.ElementAt(1).DateOccurred.Hour);
+            Assert.Single(events.ElementAt(1).Events);
         }
 
         [Fact]
@@ -113,7 +149,7 @@ namespace PowerDiary.Tests
 
                 .Build();
             var sut = new ChatEventsService(dataStore);
-            dataStore.ChatEvents.Returns(expectedEvents);
+            dataStore.RetrieveChatEventsAsync().Returns(expectedEvents);
 
             // Act
             var events = await sut.RetrieveChatEvents(EventsGranularity.Hour);
@@ -123,6 +159,61 @@ namespace PowerDiary.Tests
             Assert.Equal(4, events.ElementAt(0).Events.Count());
             Assert.Equal(3, events.ElementAt(1).Events.Count());
             Assert.Equal(3, events.ElementAt(2).Events.Count());
+        }
+
+        [Fact]
+        public async Task RetrieveChatEvents_HourGranularityOnlyHighFives_ReturnsResult()
+        {
+            // Arrange
+            var dataStore = Substitute.For<IDataStore>();
+            var testDataBuilder = new TestDataBuilder();
+            var time = DateTime.Parse("2024-02-18T07:20:12");
+            var expectedEvents = testDataBuilder
+                .WithTime(time)
+                .AddUserHighFive("Alice", "Bob")
+                .AddUserHighFive("Alice", "John")
+                .AddUserHighFive("John", "Bob")
+                .AddUserHighFive("Bob", "Alice")
+                .AddUserHighFive("George", "Alice")
+
+                .WithTime(time.AddHours(1))
+                .AddUserHighFive("John", "George")
+
+
+                .WithTime(time.AddHours(2))
+                .AddUserHighFive("Alice", "Bob")
+                .AddUserHighFive("Alice", "John")
+                .AddUserHighFive("Alice", "George")
+
+                .WithTime(time.AddHours(3))
+                .AddUserHighFive("Alice", "Bob")
+                .AddUserHighFive("John", "Bob")
+                .AddUserHighFive("George", "Bob")
+
+                .Build();
+            var sut = new ChatEventsService(dataStore);
+            dataStore.RetrieveChatEventsAsync().Returns(expectedEvents);
+
+            // Act
+            var events = await sut.RetrieveChatEvents(EventsGranularity.Hour);
+
+            // Assert
+            Assert.Equal(4, events.Count());
+            Assert.Single(events.ElementAt(0).Events);
+
+            // TODO this is not the best way to assert as it's really tight to the implementation
+            // which means that if we change anything in the implementation, this test will fail
+            Assert.Equal("4 people high-fived 3 people", events.ElementAt(0).Events.First());
+
+
+            Assert.Single(events.ElementAt(1).Events);
+            Assert.Equal("1 person high-fived 1 person", events.ElementAt(1).Events.First());
+
+            Assert.Single(events.ElementAt(2).Events);
+            Assert.Equal("1 person high-fived 3 people", events.ElementAt(2).Events.First());
+
+            Assert.Single(events.ElementAt(3).Events);
+            Assert.Equal("3 people high-fived 1 person", events.ElementAt(3).Events.First());
         }
 
         [Fact]
@@ -166,18 +257,23 @@ namespace PowerDiary.Tests
                 .AddUserComment("Alice", "Hi people!")
                 .AddUserHighFive("Alice", "Bob")
 
+                .WithTime(time.AddDays(4))
+                .AddUserEntered("Bob")
+                .AddUserComment("Bob", "Hello there")
+
                 .Build();
             var sut = new ChatEventsService(dataStore);
-            dataStore.ChatEvents.Returns(expectedEvents);
+            dataStore.RetrieveChatEventsAsync().Returns(expectedEvents);
 
             // Act
             var events = await sut.RetrieveChatEvents(EventsGranularity.Day);
 
             // Assert
-            Assert.Equal(3, events.Count());
+            Assert.Equal(4, events.Count());
             Assert.Equal(4, events.ElementAt(0).Events.Count());
             Assert.Equal(3, events.ElementAt(1).Events.Count());
-            Assert.Equal(4, events.ElementAt(1).Events.Count());
+            Assert.Equal(4, events.ElementAt(2).Events.Count());
+            Assert.Equal(2, events.ElementAt(3).Events.Count());
         }
 
     }
