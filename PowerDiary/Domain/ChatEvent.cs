@@ -3,7 +3,7 @@ namespace PowerDiary.Domain
     /// <summary>
     /// Base class for all chat events
     /// </summary>
-    public class ChatEvent(ChatEventType type)
+    public abstract class ChatEvent(ChatEventType type)
     {
         /// <summary>
         /// The time the event occurred
