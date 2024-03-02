@@ -1,5 +1,7 @@
 using System.Text.Json.Serialization;
 
+using Microsoft.EntityFrameworkCore;
+
 using PowerDiary.Persistence;
 using PowerDiary.Services;
 
@@ -13,7 +15,9 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<IDataStore, DataStore>();
+builder.Services.AddDbContext<PowerDiaryDbContext>();
+
+builder.Services.AddScoped<IDataStore, PowerDiaryDbContext>();
 builder.Services.AddTransient<IChatEventsService, ChatEventsService>();
 
 var app = builder.Build();
@@ -30,5 +34,13 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// This is a simple way to ensure the database is created and migrated
+// In production application this should be done in a separate setup step
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<PowerDiaryDbContext>();
+    context.Database.Migrate();
+}
 
 app.Run();

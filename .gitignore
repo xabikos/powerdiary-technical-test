@@ -477,3 +477,6 @@ $RECYCLE.BIN/
 *.lnk
 
 appsettings.Development.json
+/PowerDiary/Persistence/power-diary.db
+/PowerDiary/Persistence/power-diary.db-shm
+/PowerDiary/Persistence/power-diary.db-wal

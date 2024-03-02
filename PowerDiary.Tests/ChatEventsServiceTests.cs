@@ -25,7 +25,7 @@ namespace PowerDiary.Tests
         [InlineData(EventsGranularity.Minute)]
         [InlineData(EventsGranularity.Hour)]
         [InlineData(EventsGranularity.Day)]
-        public async void RetrieveChatEvents_NotEvents_ReturnsEmpty(EventsGranularity granularity)
+        public async Task RetrieveChatEvents_NotEvents_ReturnsEmpty(EventsGranularity granularity)
         {
             // Arrange
             var dataStore = Substitute.For<IDataStore>();
