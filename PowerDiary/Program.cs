@@ -2,6 +2,9 @@ using System.Text.Json.Serialization;
 
 using Microsoft.EntityFrameworkCore;
 
+using NextjsStaticHosting.AspNetCore;
+
+using PowerDiary.Configuration;
 using PowerDiary.Persistence;
 using PowerDiary.Services;
 
@@ -14,6 +17,15 @@ builder.Services.AddControllers()
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.Configure<RouteOptions>(options =>
+{
+    options.ConstraintMap.Add("EventsGranularity", typeof(CustomRouteConstraint));
+});
+
+// Step 1: Add Next.js hosting support
+builder.Services.Configure<NextjsStaticHostingOptions>(builder.Configuration.GetSection("NextjsStaticHosting"));
+builder.Services.AddNextjsStaticHosting();
 
 builder.Services.AddDbContext<PowerDiaryDbContext>();
 
@@ -34,6 +46,14 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Step 2: Register dynamic endpoints to serve the correct HTML files at the right request paths.
+// Endpoints are created dynamically based on HTML files found under the specified RootPath during startup.
+// Endpoints are currently NOT refreshed if the files later change on disk.
+app.MapNextjsStaticHtmls();
+
+// Step 3: Serve other required files (e.g. js, css files in the exported next.js app).
+app.UseNextjsStaticHosting();
 
 // This is a simple way to ensure the database is created and migrated
 // In production application this should be done in a separate setup step

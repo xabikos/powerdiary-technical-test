@@ -10,11 +10,11 @@ namespace PowerDiary.Controllers
     public class ChatController(IChatEventsService chatEvents) : ControllerBase
     {
 
-        [HttpGet]
+        [HttpGet("{granularity:EventsGranularity}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<ChatEventsDTO>>> GetChatEventsByMinute(EventsGranularity eventsGranularity)
+        public async Task<ActionResult<IEnumerable<ChatEventsDTO>>> GetChatEventsByMinute([FromRoute]EventsGranularity granularity)
         {
-            var events = await chatEvents.RetrieveChatEvents(eventsGranularity);
+            var events = await chatEvents.RetrieveChatEvents(granularity);
             return Ok(events);
         }
     }
