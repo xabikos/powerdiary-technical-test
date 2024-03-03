@@ -10,22 +10,26 @@ export default function ChatHistory() {
 
   const [granularity, setGranularity] = useState<EventGranularity>("Minute")
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [events, setEvents] = useState<ChatEvent[]>([])
 
   // use fetch to get the chat history
   useEffect(() => {
-    try {
-      const fetchChatHistory = async () => {
+
+    const fetchChatHistory = async () => {
+      setError(null)
+      try {
         const response = await fetch(`/api/chat/${granularity}`)
         const data = await response.json()
         setIsLoading(false)
         setEvents(data)
+      } catch (error) {
+        setIsLoading(false)
+        setError("Error fetching chat history. Please try again and select a valid value.")
       }
-
-      fetchChatHistory()
-    } catch (error) {
-      setIsLoading(false)
     }
+
+    fetchChatHistory()
   }, [granularity])
 
   const formatDate = (date: Date) => {
@@ -36,6 +40,39 @@ export default function ChatHistory() {
       return date.getHours() + ":00"
     }
     return date.toLocaleDateString()
+  }
+
+  const renderEvents = () => {
+    if (granularity === 'Day') {
+      return events.map((event, index) => (
+        <div key={index} className="flex flex-row items-center w-full mt-4 border-b ">
+          <h2  className="text-lg font-lg mr-5">{formatDate(new Date(event.dateOccurred))}</h2>
+          <ul className="flex flex-col w-full mb-3">
+            {event.events.map((event, index) => (
+              <li key={index} className="text-md">{event}</li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+    else {
+      const groupedEventsByDay = Object.groupBy(events, ({ dateOccurred }: { dateOccurred: Date }) => dateOccurred.toString().replace(/T.+/, ''))
+      return Object.keys(groupedEventsByDay).map((date, index) => (
+        <div key={index} className="flex flex-col items-center w-full mt-4 border-b ">
+          <h2  className="text-lg font-bold mr-5">{date}</h2>
+          {groupedEventsByDay[date].map((event:ChatEvent, index:number) => (
+            <div key={index} className="flex flex-row items-center w-full mt-4 border-b ">
+            <h2  className="text-lg font-lg mr-5">{formatDate(new Date(event.dateOccurred))}</h2>
+            <ul className="flex flex-col w-full mb-3">
+              {event.events.map((event, index) => (
+                <li key={index} className="text-md">{event}</li>
+              ))}
+            </ul>
+          </div>
+          ))}
+        </div>
+      ))
+    }
   }
 
   if (isLoading) {
@@ -53,18 +90,11 @@ export default function ChatHistory() {
           <option value="Minute">Minute</option>
           <option value="Hour">Hour</option>
           <option value="Day">Day</option>
+          <option value="Invalid">Invalid value</option>
         </select>
       </div>
-      {events.map((event, index) => (
-        <div key={index} className="flex flex-row items-center w-full mt-4 border-b ">
-          <h2 className="text-lg font-lg mr-5">{formatDate(new Date(event.dateOccurred))}</h2>
-          <ul className="flex flex-col w-full mb-3">
-            {event.events.map((event, index) => (
-              <li key={index} className="text-md">{event}</li>
-            ))}
-          </ul>
-        </div>
-      ))}
+      {error && <div className="text-red-500 mt-5">{error}</div>}
+      {!error && renderEvents()}
     </div>
   )
 }
