@@ -8,32 +8,44 @@ namespace PowerDiary.Services
     /// <summary>
     /// Implementation of <see cref="IChatEventsService"/>
     /// </summary>
-    public class ChatEventsService(IDataStore dataStore) : IChatEventsService
+    public class ChatEventsService(ILogger<ChatEventsService> logger, IDataStore dataStore) : IChatEventsService
     {
 
         public async Task<IEnumerable<ChatEventsDTO>> RetrieveChatEvents(EventsGranularity granularity)
         {
             if (!Enum.IsDefined(typeof(EventsGranularity), granularity))
             {
+                logger.LogError("Invalid granularity value: {Granularity}", granularity);
                 throw new ArgumentException("Invalid granularity value", nameof(granularity));
             }
 
-            // This is still IQueryable, so we can still apply further filtering or grouping
-            var chatEvents = await dataStore.RetrieveChatEventsAsync();
-
-            if (!chatEvents.Any())
+            try
             {
-                return [];
+                logger.LogInformation("Fetching chat history with granularity: {Granularity}", granularity);
+                // This is still IQueryable, so we can still apply further filtering or grouping
+                var chatEvents = await dataStore.RetrieveChatEventsAsync();
+
+                if (!chatEvents.Any())
+                {
+                    return [];
+                }
+
+                return granularity switch
+                {
+                    EventsGranularity.Minute => GroupChatEventsByMinute(chatEvents),
+                    EventsGranularity.Hour => GroupChatEventsByHour(chatEvents),
+                    EventsGranularity.Day => GroupChatEventsByDay(chatEvents),
+                    // Not reachable as we check for valid enum type right above, but we should handle it
+                    _ => [],
+                };
             }
-
-            return granularity switch
+            catch (Exception ex)
             {
-                EventsGranularity.Minute => GroupChatEventsByMinute(chatEvents),
-                EventsGranularity.Hour => GroupChatEventsByHour(chatEvents),
-                EventsGranularity.Day => GroupChatEventsByDay(chatEvents),
-                // Not reachable as we check for valid enum type right above, but we should handle it
-                _ => [],
-            };
+                // Since this is a read only operation we can't do much about it, so we just log the error and rethrow
+                // so the calling code could handle it by adding a retry policy or something similar
+                logger.LogError(ex, "Error when fetching chat history");
+                throw;
+            }
         }
 
         private static IEnumerable<ChatEventsDTO> GroupChatEventsByMinute(IQueryable<ChatEvent> chatEvents)

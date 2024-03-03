@@ -8,10 +8,12 @@ using PowerDiary.Configuration;
 using PowerDiary.Persistence;
 using PowerDiary.Services;
 
+// In a real world application we should initialize a logger and include the following code in a try-catch block
+// to catch any exceptions that occur during the startup process
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers()
     .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -22,6 +24,8 @@ builder.Services.Configure<RouteOptions>(options =>
 {
     options.ConstraintMap.Add("EventsGranularity", typeof(CustomRouteConstraint));
 });
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 // Step 1: Add Next.js hosting support
 builder.Services.Configure<NextjsStaticHostingOptions>(builder.Configuration.GetSection("NextjsStaticHosting"));
@@ -43,7 +47,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
+app.UseExceptionHandler();
 
 app.MapControllers();
 

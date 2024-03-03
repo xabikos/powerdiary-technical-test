@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+
 using NSubstitute;
 
 using PowerDiary.Domain;
@@ -13,8 +15,9 @@ namespace PowerDiary.Tests
         public async Task RetrieveChatEvents_WithInvalidGranularity_ThrowsException()
         {
             // Arrange
+            var logger = Substitute.For<ILogger<ChatEventsService>>();
             var dataStore = Substitute.For<IDataStore>();
-            var sut = new ChatEventsService(dataStore);
+            var sut = new ChatEventsService(logger, dataStore);
             var invalidGranularity = (EventsGranularity)999; // Invalid enum value
 
             // Act and Assert
@@ -28,9 +31,10 @@ namespace PowerDiary.Tests
         public async Task RetrieveChatEvents_NotEvents_ReturnsEmpty(EventsGranularity granularity)
         {
             // Arrange
+            var logger = Substitute.For<ILogger<ChatEventsService>>();
             var dataStore = Substitute.For<IDataStore>();
             dataStore.RetrieveChatEventsAsync().Returns(Enumerable.Empty<ChatEvent>().AsQueryable());
-            var sut = new ChatEventsService(dataStore);
+            var sut = new ChatEventsService(logger, dataStore);
 
             // Act
             var events = await sut.RetrieveChatEvents(granularity);
@@ -43,6 +47,7 @@ namespace PowerDiary.Tests
         public async Task RetrieveChatEvents_MinuteGranularity_ReturnsResult()
         {
             // Arrange
+            var logger = Substitute.For<ILogger<ChatEventsService>>();
             var dataStore = Substitute.For<IDataStore>();
             var testDataBuilder = new TestDataBuilder();
             var time = DateTime.Parse("2024-02-18T07:20:12");
@@ -65,7 +70,7 @@ namespace PowerDiary.Tests
                 .AddUserLeft("Alice")
 
                 .Build();
-            var sut = new ChatEventsService(dataStore);
+            var sut = new ChatEventsService(logger, dataStore);
             dataStore.RetrieveChatEventsAsync().Returns(expectedEvents);
 
             // Act
@@ -89,6 +94,7 @@ namespace PowerDiary.Tests
         public async Task RetrieveChatEvents_SameMinuteDifferentHour_ReturnsResult()
         {
             // Arrange
+            var logger = Substitute.For<ILogger<ChatEventsService>>();
             var dataStore = Substitute.For<IDataStore>();
             var testDataBuilder = new TestDataBuilder();
             var time = DateTime.Parse("2024-02-18T07:20:12");
@@ -100,7 +106,7 @@ namespace PowerDiary.Tests
                 .AddUserLeft("Bob")
 
                 .Build();
-            var sut = new ChatEventsService(dataStore);
+            var sut = new ChatEventsService(logger, dataStore);
             dataStore.RetrieveChatEventsAsync().Returns(expectedEvents);
 
             // Act
@@ -120,6 +126,7 @@ namespace PowerDiary.Tests
         public async Task RetrieveChatEvents_HourGranularity_ReturnsResult()
         {
             // Arrange
+            var logger = Substitute.For<ILogger<ChatEventsService>>();
             var dataStore = Substitute.For<IDataStore>();
             var testDataBuilder = new TestDataBuilder();
             var time = DateTime.Parse("2024-02-18T07:20:12");
@@ -148,7 +155,7 @@ namespace PowerDiary.Tests
                 .AddUserHighFive("Alice", "Bob")
 
                 .Build();
-            var sut = new ChatEventsService(dataStore);
+            var sut = new ChatEventsService(logger, dataStore);
             dataStore.RetrieveChatEventsAsync().Returns(expectedEvents);
 
             // Act
@@ -165,6 +172,7 @@ namespace PowerDiary.Tests
         public async Task RetrieveChatEvents_HourGranularityOnlyHighFives_ReturnsResult()
         {
             // Arrange
+            var logger = Substitute.For<ILogger<ChatEventsService>>();
             var dataStore = Substitute.For<IDataStore>();
             var testDataBuilder = new TestDataBuilder();
             var time = DateTime.Parse("2024-02-18T07:20:12");
@@ -191,7 +199,7 @@ namespace PowerDiary.Tests
                 .AddUserHighFive("George", "Bob")
 
                 .Build();
-            var sut = new ChatEventsService(dataStore);
+            var sut = new ChatEventsService(logger, dataStore);
             dataStore.RetrieveChatEventsAsync().Returns(expectedEvents);
 
             // Act
@@ -220,6 +228,7 @@ namespace PowerDiary.Tests
         public async Task RetrieveChatEvents_DayGranularity_ReturnsResult()
         {
             // Arrange
+            var logger = Substitute.For<ILogger<ChatEventsService>>();
             var dataStore = Substitute.For<IDataStore>();
             var testDataBuilder = new TestDataBuilder();
             var time = DateTime.Parse("2024-02-18T07:20:12");
@@ -262,7 +271,7 @@ namespace PowerDiary.Tests
                 .AddUserComment("Bob", "Hello there")
 
                 .Build();
-            var sut = new ChatEventsService(dataStore);
+            var sut = new ChatEventsService(logger, dataStore);
             dataStore.RetrieveChatEventsAsync().Returns(expectedEvents);
 
             // Act
