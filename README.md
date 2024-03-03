@@ -33,6 +33,8 @@ Pagination of the data has not been taken into account as part of the test. In a
 add support pagination and most likely some filtering when fetching the data otherwise we will end up fetching
 way too much data that it would be hard for the user to navigate around.
 
+Building and executing the application in release mode, ready for production has not been implemented.
+
 ## Executing locally
 
 To be able to execute the application and the tests locally you need to have install dotnet 8 and node js, preferably the latest version.
@@ -51,7 +53,7 @@ to restore the dotnet dependencies.
 
 Then, to start the application:
 ```bash
-dotnet run --project ./PowerDiary/PowerDiary
+dotnet run --project ./PowerDiary/PowerDiary.csproj
 ```
 
 By default this starts `http` profile.
