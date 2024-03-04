@@ -10,6 +10,6 @@ namespace PowerDiary.Services
         /// </summary>
         /// <param name="granularity">The granularity to group events by</param>
         /// <returns>A list with chat events DTO</returns>
-        public Task<IEnumerable<ChatEventsDTO>> RetrieveChatEvents(EventsGranularity granularity);
+        public Task<IEnumerable<ChatEventsDTO>> RetrieveChatEventsAsync(EventsGranularity granularity);
     }
 }

@@ -21,7 +21,7 @@ namespace PowerDiary.Tests
             var invalidGranularity = (EventsGranularity)999; // Invalid enum value
 
             // Act and Assert
-            await Assert.ThrowsAsync<ArgumentException>(() => sut.RetrieveChatEvents(invalidGranularity));
+            await Assert.ThrowsAsync<ArgumentException>(() => sut.RetrieveChatEventsAsync(invalidGranularity));
         }
 
         [Theory]
@@ -37,7 +37,7 @@ namespace PowerDiary.Tests
             var sut = new ChatEventsService(logger, dataStore);
 
             // Act
-            var events = await sut.RetrieveChatEvents(granularity);
+            var events = await sut.RetrieveChatEventsAsync(granularity);
 
             // Assert
             Assert.Empty(events);
@@ -74,7 +74,7 @@ namespace PowerDiary.Tests
             dataStore.RetrieveChatEventsAsync().Returns(expectedEvents);
 
             // Act
-            var events = await sut.RetrieveChatEvents(EventsGranularity.Minute);
+            var events = await sut.RetrieveChatEventsAsync(EventsGranularity.Minute);
 
             // Assert
             Assert.Equal(5, events.Count());
@@ -110,7 +110,7 @@ namespace PowerDiary.Tests
             dataStore.RetrieveChatEventsAsync().Returns(expectedEvents);
 
             // Act
-            var events = await sut.RetrieveChatEvents(EventsGranularity.Minute);
+            var events = await sut.RetrieveChatEventsAsync(EventsGranularity.Minute);
 
             // Assert
             Assert.Equal(2, events.Count());
@@ -159,7 +159,7 @@ namespace PowerDiary.Tests
             dataStore.RetrieveChatEventsAsync().Returns(expectedEvents);
 
             // Act
-            var events = await sut.RetrieveChatEvents(EventsGranularity.Hour);
+            var events = await sut.RetrieveChatEventsAsync(EventsGranularity.Hour);
 
             // Assert
             Assert.Equal(3, events.Count());
@@ -203,7 +203,7 @@ namespace PowerDiary.Tests
             dataStore.RetrieveChatEventsAsync().Returns(expectedEvents);
 
             // Act
-            var events = await sut.RetrieveChatEvents(EventsGranularity.Hour);
+            var events = await sut.RetrieveChatEventsAsync(EventsGranularity.Hour);
 
             // Assert
             Assert.Equal(4, events.Count());
@@ -275,7 +275,7 @@ namespace PowerDiary.Tests
             dataStore.RetrieveChatEventsAsync().Returns(expectedEvents);
 
             // Act
-            var events = await sut.RetrieveChatEvents(EventsGranularity.Day);
+            var events = await sut.RetrieveChatEventsAsync(EventsGranularity.Day);
 
             // Assert
             Assert.Equal(4, events.Count());

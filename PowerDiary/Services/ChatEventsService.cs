@@ -11,7 +11,7 @@ namespace PowerDiary.Services
     public class ChatEventsService(ILogger<ChatEventsService> logger, IDataStore dataStore) : IChatEventsService
     {
 
-        public async Task<IEnumerable<ChatEventsDTO>> RetrieveChatEvents(EventsGranularity granularity)
+        public async Task<IEnumerable<ChatEventsDTO>> RetrieveChatEventsAsync(EventsGranularity granularity)
         {
             if (!Enum.IsDefined(typeof(EventsGranularity), granularity))
             {

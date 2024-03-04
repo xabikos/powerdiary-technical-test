@@ -33,6 +33,10 @@ Pagination of the data has not been taken into account as part of the test. In a
 add support pagination and most likely some filtering when fetching the data otherwise we will end up fetching
 way too much data that it would be hard for the user to navigate around.
 
+An additional improvement point that is coming after the one above is to have a starting point for the history. For
+example we could initially load the events only for the current day to reduce the amount of data that we fetch during
+the first redemption of the page.
+
 Building and executing the application in release mode, ready for production has not been implemented.
 
 ## Executing locally

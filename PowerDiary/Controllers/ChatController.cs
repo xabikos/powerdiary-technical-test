@@ -15,11 +15,11 @@ namespace PowerDiary.Controllers
         [HttpGet("{granularity:EventsGranularity}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IEnumerable<ChatEventsDTO>>> GetChatEventsByMinute([FromRoute] EventsGranularity granularity)
+        public async Task<ActionResult<IEnumerable<ChatEventsDTO>>> GetChatEvents([FromRoute] EventsGranularity granularity)
         {
             try
             {
-                var events = await chatEvents.RetrieveChatEvents(granularity);
+                var events = await chatEvents.RetrieveChatEventsAsync(granularity);
                 return Ok(events);
 
             }
